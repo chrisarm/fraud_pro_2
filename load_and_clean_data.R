@@ -73,7 +73,7 @@ rm("match_up_dt", "max_merchnum", "merchnum_fill","merchnum_na", "initial_NA")
 cdt[,merchnum := as.factor(merchnum)]
 cdt[,uuid := UUIDgenerate(), merch_description]
 cdt[is.na(merchnum), merchnum := uuid]
-
+cdt[,uuid:=NULL]
 
 ##############################
 ## Merchzip Transformations
