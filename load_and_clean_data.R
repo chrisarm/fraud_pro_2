@@ -107,4 +107,4 @@ cdt[is.na(merch_zip), merch_zip := "Other"]
 #########################
 #
 
-saveRDS(data.frame(cdt), "data/cleaned_card_payments.RDS")
+saveRDS(data.frame(cdt), "data/cleaned_card_payments.RDS", ascii = T)
