@@ -101,10 +101,15 @@ cdt[, i.merch_zip := NULL] #remove leftover field
 print(paste("Filled in", initial_NA - sum(is.na(cdt$merch_zip)), " NAs for merch_zip by using most common zip for each merchant description"))
 rm("match_up_dt", "max_merch_zip", "merch_zip_fill","merch_zip_na", "initial_NA")
 
-### Fill in the rest with "Other"
-print(paste("Filling in", cdt[is.na(merch_zip), .N], "zip codes with 'Other'"))
-cdt[is.na(merch_zip), merch_zip := "Other"]
+### Create Zip3 variable
+cdt[, merch_zip3 := substr(merch_zip, 1, 3)]
+
+### Fill in the rest of the NAs with "Unknown"
+print(paste("Filling in", cdt[is.na(merch_zip), .N], "zip codes with 'Unknown'"))
+cdt[is.na(merch_zip), merch_zip := "Unknown"]
+cdt[is.na(merch_zip3), merch_zip3 := "Unknown"]
 cdt[,merch_zip := as.factor(merch_zip)]
+cdt[,merch_zip3 := as.factor(merch_zip3)]
 
 #########################
 # Merchstate Transforamtions
