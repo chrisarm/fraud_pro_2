@@ -111,4 +111,8 @@ cdt[,merch_zip := as.factor(merch_zip)]
 
 cdt[is.na(merch_state), merch_state := "Unknown"]
 
+#########################
+# Remove bad row
+cdt <- cdt[!amount == max(amount), ]
+
 saveRDS(data.frame(cdt), "data/cleaned_card_payments.RDS", ascii = T)
