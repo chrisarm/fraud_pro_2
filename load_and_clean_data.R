@@ -41,8 +41,7 @@ cdt[,merch_description := toupper(merch_description)] # Uppercase everything
 cdt[,merch_description := gsub(pattern = "[^[:alnum:] ]", replacement = "", x = merch_description, perl = T)] # Remove punctuation
 
 ### Fix FEDEX AB# names
-cdt[grepl('FEDEX.+SHP.+AB#',x = merch_description, perl = T), merch_description := "FEDEX SHP AB#"]
-cdt[grepl('FEDEX.+AB#',x = merch_description,perl = T)]
+cdt[grepl('FEDEX.+SHP.+AB',x = merch_description, perl = T), merch_description := "FEDEX SHP AB"]
 
 ## "ALASKA NATIVE" - WTF? ###
 
@@ -65,7 +64,7 @@ max_merchnum <- merchnum_fill[merchnum_na, nomatch=0L, on = "merch_description"]
 ### Fill in missing rows of merchnum with the most common valid ones by merch_description
 cdt <- max_merchnum[cdt, on = "merch_description"] #left_join
 cdt[, merchnum := ifelse(is.na(merchnum), i.merchnum, merchnum)] #fill in missing
-cdt[, i.merchnum := NULL] #remove unnecessary row
+cdt[, i.merchnum := NULL] #remove fill column
 
 ### Cleanup merchnum transformation stuff
 print(paste("Filled in", initial_NA - sum(is.na(cdt$merchnum)), " NAs for merchnum"))
@@ -74,6 +73,8 @@ rm("match_up_dt", "max_merchnum", "merchnum_fill","merchnum_na", "initial_NA")
 ### Fill in the rest with UUIDs
 cdt[,uuid := UUIDgenerate(), merch_description]
 cdt[is.na(merchnum), merchnum := uuid]
+
+### Delete the uuid column
 cdt[,uuid:=NULL]
 
 ##############################
@@ -83,7 +84,7 @@ initial_NA <- sum(is.na(cdt[,merch_zip]))
 ### Use matching table to fill in missing values
 match_up_dt <- cdt[,.(record_number, merch_description, merch_zip)]
 
-### Use most common merch_zip based on merch_description match to fill in missing
+### Find most common merch_zip based on merch_description match to fill in missing values
 merch_zip_na <- match_up_dt[,.(.N),c("merch_description","merch_zip")][is.na(merch_zip)]
 merch_zip_fill <- match_up_dt[,.(freq = .N),c("merch_description","merch_zip")][!is.na(merch_zip)][,.(freq_max = max(freq)),c("merch_description")]
 
@@ -94,20 +95,20 @@ max_merch_zip <- merch_zip_fill[merch_zip_na, nomatch=0L, on = "merch_descriptio
 ### Fill in missing rows of merch_zip with the most common valid ones by merch_description
 cdt <- max_merch_zip[cdt, on = "merch_description"] #left_join
 cdt[, merch_zip := ifelse(!is.na(i.merch_zip), i.merch_zip, merch_zip)] #fill in missing
-cdt[, i.merch_zip := NULL] #remove unnecessary row
+cdt[, i.merch_zip := NULL] #remove leftover field
 
 ### Cleanup merch_zip transformation stuff
-print(paste("Filled in", initial_NA - sum(is.na(cdt$merch_zip)), " NAs for merch_zip"))
+print(paste("Filled in", initial_NA - sum(is.na(cdt$merch_zip)), " NAs for merch_zip by using most common zip for each merchant description"))
 rm("match_up_dt", "max_merch_zip", "merch_zip_fill","merch_zip_na", "initial_NA")
 
 ### Fill in the rest with "Other"
-cdt[,merch_zip := as.factor(merch_zip)]
+print(paste("Filling in", cdt[is.na(merch_zip), .N], "zip codes with 'Other'"))
 cdt[is.na(merch_zip), merch_zip := "Other"]
-
+cdt[,merch_zip := as.factor(merch_zip)]
 
 #########################
 # Merchstate Transforamtions
 
-# TBD #
+cdt[is.na(merch_state), merch_state := "Unknown"]
 
 saveRDS(data.frame(cdt), "data/cleaned_card_payments.RDS", ascii = T)
