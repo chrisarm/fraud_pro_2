@@ -1,0 +1,224 @@
+---
+title: 'Data Quality Report: Credit Card Payment'
+author: "Bryce Charette"
+output:
+  word_document: default
+  prettydoc::html_pretty:
+    theme: architect
+  pdf_document: null
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T, message = F, warning = F)
+suppressPackageStartupMessages(library(radiant))
+suppressPackageStartupMessages(library(readxl))
+# suppressPackageStartupMessages(library(DT))
+suppressPackageStartupMessages(library(scales))
+dat <- read_xlsx("card_payments.xlsx", sheet = "Sheet1", col_names = T)
+```
+
+<!-- ## View data -->
+
+<!-- ```{r echo=F} -->
+<!-- datatable(head(dat,10), options = list(scrollX = TRUE)) -->
+<!-- ``` -->
+
+## Clean data
+
+```{r}
+# Adjust column names
+colnames(dat) <- c("rec_num","card_num","date","merch_num","merch_desc",
+                   "merch_state","merch_zip","trans_type","amount","fraud")
+
+# Adjust data types
+dat$rec_num <- as.character(dat$rec_num)
+dat$card_num <- as.character(dat$card_num)
+
+# Save data
+# saveRDS(dat, "card_payments.rds")
+```
+
+## Statistics & Distributions
+
+### `rec_num`  
+* **Interpretation:** Unique ID for each record in the data set.  
+* **Type:** ID  
+* **Unique Values:** `r formatnr(length(unique(dat$rec_num)), dec=0)`  
+* **Missing Values:** `r formatnr(sum(is.na(dat$rec_num)), dec=0)` (`r formatnr(sum(is.na(dat$rec_num))/nrow(dat), dec=2, perc=T)`)  
+* **Mean:** `NA`  
+* **Standard Deviation:** `NA`  
+* **Distribution:** `NA`  
+
+### `card_num`  
+* **Interpretation:** Credit card number of credit card holder.  
+* **Type:** ID  
+* **Unique Values:** `r formatnr(length(unique(dat$card_num)), dec=0)`  
+* **Missing Values:** `r formatnr(sum(is.na(dat$card_num)), dec=0)` (`r formatnr(sum(is.na(dat$card_num))/nrow(dat), dec=2, perc=T)`)    
+* **Mean:** `NA`  
+* **Standard Deviation:** `NA`  
+* **Distribution:** `NA`  
+
+### `date`  
+* **Interpretation:** Transaction date  
+* **Type:** Date  
+* **Unique Values:** `r formatnr(length(unique(dat$date)), dec=0)`  
+* **Missing Values:** `r formatnr(sum(is.na(dat$date)), dec=0)` (`r formatnr(sum(is.na(dat$date))/nrow(dat), dec=2, perc=T)`)  
+* **Mean:** `NA`  
+* **Standard Deviation:** `NA`  
+* **Distribution:**   
+```{r echo=F}
+temp <- dat %>%
+  select(date) %>% group_by(date) %>% summarise("freq" = n())
+temp %>%
+  ggplot(aes(x=date,y=freq))+geom_bar(stat = "identity", fill="dodgerblue")+
+  ggtitle("Distribution of date", subtitle = paste0(formatnr(sum(temp$freq)/nrow(dat),perc=T, dec=2),
+                                                             " of data shown (NA's removed)"))+
+  scale_x_datetime(date_breaks = "1 month", date_labels = "%b")+
+  xlab("")+ylab("# of Transactions")+scale_y_continuous(labels = comma)
+```
+
+### `merch_num`  
+* **Interpretation:** Merchant ID  
+* **Type:** ID  
+* **Unique Values:** `r formatnr(length(unique(dat$merch_num)), dec=0)`  
+* **Missing Values:** `r formatnr(sum(is.na(dat$merch_num)), dec=0)` (`r formatnr(sum(is.na(dat$merch_num))/nrow(dat), dec=2, perc=T)`)  
+* **Mean:** `NA`  
+* **Standard Deviation:** `NA`  
+* **Distribution:**   
+```{r echo=F}
+temp <- dat %>%
+  select(merch_num) %>% filter(!is.na(merch_num)) %>% group_by(merch_num) %>% summarise("freq" = n()) %>%
+  arrange(desc(freq)) %>% head(30)
+temp %>%
+  ggplot(aes(x=reorder(merch_num,-freq),y=freq))+geom_bar(stat = "identity", fill="dodgerblue")+
+  ggtitle("Distribution of merch_num: Top 30", subtitle = paste0(formatnr(sum(temp$freq)/nrow(dat),perc=T, dec=2),
+                                                             " of data shown (NA's removed)"))+
+  theme(axis.text.x = element_text(angle = 70, hjust = 1))+
+  xlab("")+ylab("# of Transactions")+scale_y_continuous(labels = comma)
+```
+
+### `merch_desc`  
+* **Interpretation:** Merchant description
+* **Type:** ID  
+* **Unique Values:** `r formatnr(length(unique(dat$merch_desc)), dec=0)`  
+* **Missing Values:** `r formatnr(sum(is.na(dat$merch_desc)), dec=0)` (`r formatnr(sum(is.na(dat$merch_desc))/nrow(dat), dec=2, perc=T)`)  
+* **Mean:** `NA`  
+* **Standard Deviation:** `NA`  
+* **Distribution:**  
+```{r echo=F}
+temp <- dat %>%
+  select(merch_desc) %>% filter(!is.na(merch_desc)) %>% group_by(merch_desc) %>% summarise("freq" = n()) %>%
+  arrange(desc(freq)) %>% head(30)
+temp %>%
+  ggplot(aes(x=reorder(merch_desc,-freq),y=freq))+geom_bar(stat = "identity", fill="dodgerblue")+
+  ggtitle("Distribution of merch_desc: Top 30", subtitle = paste0(formatnr(sum(temp$freq)/nrow(dat),perc=T, dec=2),
+                                                             " of data shown (NA's removed)"))+
+  theme(axis.text.x = element_text(angle = 70, hjust = 1))+
+  xlab("")+ylab("# of Transactions")+scale_y_continuous(labels = comma)
+```
+
+### `merch_state`  
+* **Interpretation:** Merchant state 
+* **Type:** Categorical  
+* **Unique Values:** `r formatnr(length(unique(dat$merch_state)), dec=0)`  
+* **Missing Values:** `r formatnr(sum(is.na(dat$merch_state)), dec=0)` (`r formatnr(sum(is.na(dat$merch_state))/nrow(dat), dec=2, perc=T)`)  
+* **Mean:** `NA`  
+* **Standard Deviation:** `NA`  
+* **Distribution:**  
+
+```{r echo=F}
+temp <- dat %>%
+  select(merch_state) %>% filter(!is.na(merch_state)) %>% group_by(merch_state) %>% summarise("freq" = n()) %>%
+  arrange(desc(freq)) %>% head(50)
+temp %>%
+  ggplot(aes(x=reorder(merch_state,-freq),y=freq))+geom_bar(stat = "identity", fill="dodgerblue")+
+  ggtitle("Distribution of merch_state: Top 50", subtitle = paste0(formatnr(sum(temp$freq)/nrow(dat),perc=T, dec=2),
+                                                             " of data shown (NA's removed)"))+
+  theme(axis.text.x = element_text(angle = 70, hjust = 1))+
+  xlab("")+ylab("# of Transactions")+scale_y_continuous(labels = comma)
+```
+
+### `merch_zip`  
+* **Interpretation:** Merchant zipcode  
+* **Type:** Categorical  
+* **Unique Values:** `r formatnr(length(unique(dat$merch_zip)), dec=0)`  
+* **Missing Values:** `r formatnr(sum(is.na(dat$merch_zip)), dec=0)` (`r formatnr(sum(is.na(dat$merch_zip))/nrow(dat), dec=2, perc=T)`)  
+* **Mean:** `NA`  
+* **Standard Deviation:** `NA`  
+* **Distribution:**  
+
+```{r echo=F}
+temp <- dat %>%
+  select(merch_zip) %>% filter(!is.na(merch_zip)) %>% group_by(merch_zip) %>% summarise("freq" = n()) %>%
+  arrange(desc(freq)) %>% head(30)
+temp %>%
+  ggplot(aes(x=reorder(merch_zip,-freq),y=freq))+geom_bar(stat = "identity", fill="dodgerblue")+
+  ggtitle("Distribution of merch_zip: Top 30", subtitle = paste0(formatnr(sum(temp$freq)/nrow(dat),perc=T, dec=2),
+                                                             " of data shown (NA's removed)"))+
+  theme(axis.text.x = element_text(angle = 70, hjust = 1))+
+  xlab("")+ylab("# of Transactions")+scale_y_continuous(labels = comma)
+```
+
+### `trans_type`  
+* **Interpretation:** Transaction type  
+* **Type:** Categorical  
+* **Unique Values:** `r formatnr(length(unique(dat$trans_type)), dec=0)`  
+* **Missing Values:** `r formatnr(sum(is.na(dat$trans_type)), dec=0)` (`r formatnr(sum(is.na(dat$trans_type))/nrow(dat), dec=2, perc=T)`)  
+* **Mean:** `NA`  
+* **Standard Deviation:** `NA`  
+* **Distribution:**  
+
+```{r echo=F}
+temp <- dat %>%
+  select(trans_type) %>% filter(!is.na(trans_type)) %>% group_by(trans_type) %>% summarise("freq" = n()) %>%
+  arrange(desc(freq))
+temp %>%
+  ggplot(aes(x=reorder(trans_type,-freq),y=freq))+geom_bar(stat = "identity", fill="dodgerblue")+
+  ggtitle("Distribution of trans_type", subtitle = paste0(formatnr(sum(temp$freq)/nrow(dat),perc=T, dec=2),
+                                                             " of data shown (NA's removed)"))+
+  xlab("")+ylab("# of Transactions")+scale_y_continuous(labels = comma)+
+  geom_text(aes(label=freq), nudge_y = 5000)+
+  geom_hline(yintercept = 0)
+```
+
+### `amount`  
+* **Interpretation:** Transaction amount in US dollars ($) 
+* **Type:** Numeric  
+* **Unique Values:** `r formatnr(length(unique(dat$amount)), dec=0)`  
+* **Missing Values:** `r formatnr(sum(is.na(dat$amount)), dec=0)` (`r formatnr(sum(is.na(dat$amount))/nrow(dat), dec=2, perc=T)`)  
+* **Mean:** `r formatnr(mean(dat$amount), dec=2, sym="$")`  
+* **Standard Deviation:** `r formatnr(sd(dat$amount), dec=2, sym="$")`  
+* **Min:** `r formatnr(min(dat$amount), dec=2, sym="$")`  
+* **Max:** `r formatnr(max(dat$amount), dec=2, sym="$")`  
+* **Distribution:**  
+
+```{r echo=F}
+temp <- dat %>% select(amount) %>% filter(amount < 2.5e3)
+temp %>%
+  ggplot(aes(x=amount))+geom_histogram(fill="dodgerblue")+
+  ggtitle("Distribution of amount", subtitle = paste0(formatnr(nrow(temp)/nrow(dat),perc=T, dec=2),
+                                                             " of data shown (NA's removed)"))+
+  xlab("")+ylab("# of Transactions")+scale_y_continuous(labels = comma)+scale_x_continuous(labels = dollar)
+```
+
+### `fraud`  
+* **Interpretation:** Indicator whether transaction is fraudulent
+* **Type:** Categorical  
+* **Unique Values:** `r formatnr(length(unique(dat$fraud)), dec=0)`  
+* **Missing Values:** `r formatnr(sum(is.na(dat$fraud)), dec=0)` (`r formatnr(sum(is.na(dat$fraud))/nrow(dat), dec=2, perc=T)`)  
+* **Mean:** `NA`  
+* **Standard Deviation:** `NA`  
+* **Distribution:**  
+
+```{r echo=F}
+temp <- dat %>%
+  select(fraud) %>% filter(!is.na(fraud)) %>% group_by(fraud) %>% summarise("freq" = n()) %>%
+  arrange(desc(freq))
+temp %>%
+  ggplot(aes(x=reorder(fraud,-freq),y=freq))+geom_bar(stat = "identity", fill="dodgerblue")+
+  ggtitle("Distribution of fraud", subtitle = paste0(formatnr(sum(temp$freq)/nrow(dat),perc=T, dec=2),
+                                                             " of data shown (NA's removed)"))+
+  xlab("")+ylab("# of Transactions")+scale_y_continuous(labels = comma)+
+  geom_text(aes(label=freq), nudge_y = 5000)+
+  geom_hline(yintercept = 0)
+```
