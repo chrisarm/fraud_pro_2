@@ -59,6 +59,8 @@ cdt$e.7avgdailyfreq_merchnum <- as.numeric(NA)
 cdt$e.3avgdailyfreq_merchnum <- as.numeric(NA)
 cdt$e.1avgdailyfreq_merchnum <- as.numeric(NA)
 
+setkey(cdt, date)
+
 ########################################
 # Fill in expert variables for each row:
 for(row in 1:nrow(cdt)){
