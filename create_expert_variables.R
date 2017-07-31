@@ -75,17 +75,26 @@ for(row in 1:nrow(cdt)){
   day1History <- day3History[date <= refdate & date >= refdate - 1,] #Subset of day3History is day1History
 
   ## Set up the history tables for this row
+  setkey(day7History, merchnum)
+  setkey(day3History, merchnum)
+  setkey(day1History, merchnum)
   ref_merch <- cdt[row, merchnum, with = TRUE]
   day7History_merchnum <- day7History[merchnum == ref_merch,]
   day3History_merchnum <- day3History[merchnum == ref_merch,]
   day1History_merchnum <- day1History[merchnum == ref_merch,]
 
   refcardnum <- cdt[row, cardnum, with = TRUE]
+  setkey(day7History, cardnum)
+  setkey(day3History, cardnum)
+  setkey(day1History, cardnum)
   day7History_cardnum <- day7History[cardnum == refcardnum,]
   day3History_cardnum <- day3History[cardnum == refcardnum,]
   day1History_cardnum <- day1History[cardnum == refcardnum,]
 
   refzip3 <- cdt[row, merch_zip3, with = TRUE]
+  setkey(day7History, merch_zip3)
+  setkey(day3History, merch_zip3)
+  setkey(day1History, merch_zip3)
   day7History_zip3 <- day7History[merch_zip3 == refzip3,]
   day3History_zip3 <- day3History[merch_zip3 == refzip3,]
   day1History_zip3 <- day1History[merch_zip3 == refzip3,]
