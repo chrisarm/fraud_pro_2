@@ -20,7 +20,7 @@ rm("card_payments")
 ###########################
 # Standardize column names
 colnames(cdt) <- sapply(colnames(cdt), gsub, pattern = " ", replacement = "_")
-cdt$record_number <- as.factor(cdt$record_number)
+cdt$record_number <- as.integer(cdt$record_number)
 cdt$cardnum <- as.factor(cdt$cardnum)
 cdt$date <- as.Date(cdt$date)
 cdt$merchnum <- as.character(cdt$merchnum)
@@ -45,7 +45,8 @@ cdt[grepl('FEDEX.+SHP.+AB',x = merch_description, perl = T), merch_description :
 
 ## "ALASKA NATIVE" - WTF? ###
 
-################################
+
+
 ## Merchnum tranformations
 cdt[merchnum == 0, merchnum:= NA]
 initial_NA <- sum(is.na(cdt[,merchnum]))
@@ -77,7 +78,8 @@ cdt[is.na(merchnum), merchnum := uuid]
 ### Delete the uuid column
 cdt[,uuid:=NULL]
 
-##############################
+
+
 ## Merchzip Transformations
 initial_NA <- sum(is.na(cdt[,merch_zip]))
 
@@ -111,12 +113,13 @@ cdt[is.na(merch_zip3), merch_zip3 := "Unknown"]
 cdt[,merch_zip := as.factor(merch_zip)]
 cdt[,merch_zip3 := as.factor(merch_zip3)]
 
-#########################
-# Merchstate Transforamtions
 
+
+# Merchstate Transformations
 cdt[is.na(merch_state), merch_state := "Unknown"]
 
-#########################
+
+
 # Remove bad row
 cdt <- cdt[!amount == max(amount), ]
 
