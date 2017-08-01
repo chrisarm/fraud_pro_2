@@ -1,15 +1,26 @@
-# We don't need the ID field
-dat_df <- dat_df[,-1]
-summary(dat_df)
+# read in data
+#dat_df <- readRDS("data/expert_card_payments.RDS")
 
-## 70-30 split for training and testing, excluding OOT
+# sort by date field
+dat_df <- dat_df %>% arrange(record_number, date)
+
+# create OOT data set
+dat_oot <- dat_df %>%
+  filter(date >= "2010-10-01")
+saveRDS(dat_oot, "data/oot_df.RDS")
+
+# split data intro training and testing
 set.seed(1234)
-random_splits <- runif(nrow(dat_df)) # CHANGE THIS TO RIGHT DATA SET
-train_df <- dat_df[random_splits > 0.3,]
+dat_df <- dat_df %>%
+  filter(date < "2010-10-01") %>% # MODIFY FILTER STATEMENT
+  mutate(random_splits = runif(nrow(.)))
+
+# create training data
+train_df <- dat_df[random_splits > 0.33,]
 dim(train_df)
-
-validate_df <- dat_df[random_splits <= 0.3,]
-dim(validate_df)
-
 saveRDS(train_df, "data/train_df.RDS")
+
+# create test data
+validate_df <- dat_df[random_splits <= 0.33,]
+dim(validate_df)
 saveRDS(validate_df, "data/validate_df.RDS")
