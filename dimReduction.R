@@ -30,23 +30,28 @@ ks.results <- ks.results %>% arrange(D.stat)
 # save KS results to RDS file
 saveRDS(ks.results, "data/KSresults.RDS")
 
-# find the top 85% of variables based on D-stat
-n <- 85
-ks.results <- ks.results[ks.results$D.stat > quantile(ks.results$D.stat,prob=1-n/100),]
+# keep the top n variables based on D-stat
+top <- 25
+ks.results <- head(ks.results, n = top)
 
 # reduce dat_df to variables in ks.results from previous step
-dat_df <- dat_df[ ,!(names(dat_df) %in% ks.results$variables)]
+dat_df <- dat_df[ ,(names(dat_df) %in% c("fraud", ks.results$variables))]
 
 # remove extra variables in memory
-rm(good, bad, i, test, n)
-
+rm(good, bad, i, tmp, top)
 
 #### LOGISTIC REGRESSION -- STEPWISE ####
 library(radiant)
 
 # create logistic regression
 logit <- logistic(dataset = dat_df, rvar = "fraud", lev = "TRUE",
-                  evar = colnames(dat_df)[2:length(dat_df)], check = "stepwise-both")
+                  evar = colnames(dat_df)[2:length(dat_df)], check = "stepwise-backward",
+                  int = c("e.1countzip3_cardnum:e.1meanamount_cardnum", "e.1countzip3_cardnum:e.1medianamount_cardnum"))
 
-## summarize results of logistic regression
+# summarize results of logit
 summary(logit)
+
+# coefficient plot
+plot(logit, plots = "coef", custom = TRUE) +
+  labs(title = "Coefficient plot")
+ggsave("plots/logit_coeff.png")
