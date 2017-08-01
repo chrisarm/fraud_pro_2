@@ -25,7 +25,7 @@ nnet.fit <- train(fraud ~ e.1meanamount_zip3 + e.7medianamount_zip3 + e.1mediana
                   linout = 1)
 
 # Save model
-save(nnet.fit, file = "data/nnet_model.rda")
+save(nnet.fit, file = "models/nnet_model.rda")
 
 # Review results
 summary(nnet.fit)
