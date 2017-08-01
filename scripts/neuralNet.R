@@ -7,6 +7,9 @@ train_dat <- readRDS("data/train.RDS")
 # Set seed
 set.seed(1234)
 
+# Adjust data type for fraud variable
+train_dat$fraud <- as.numeric(train_dat$fraud)
+
 # Train the model on the training set
 my.grid <- expand.grid(.decay = c(0.1,0.5,0.9), .size = c(2, 3, 4))
 my.control <- trainControl(method = 'cv', number = 10)
