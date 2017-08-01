@@ -9,17 +9,17 @@ dat_df <- dat_df[,-c(1:9,11)]
 library(ks)
 
 # create dataframe for ks test results
-ks.results <- data.frame(variables = colnames(dat_df)[2:length(dat_df)],
-                         D.stat = vector(mode = "numeric", length = (length(dat_df)-1)))
+ks.results <- data.frame(variables = colnames(dat_df)[2:length(dat_df)]) %>%
+  mutate(D.stat = vector(mode = "numeric", length = (length(.))))
 
 # univariate test each expert variable --- NOT WORKING
-for(i in 2:length(dat_df)){
-  good <- dat_df[,c(1,i)]
-  good <- good %>% filter(fraud==FALSE)
-  bad <- dat_df[,c(1,i)]
-  bad <- bad %>% filter(fraud==TRUE)
-  test <- ks.test(good[,2], bad[,2])
-  ks.results[i-1,2] <- test$statistic
+for(i in 1:length(ks.results)){
+  good <- filter(.data = dat_df, fraud==FALSE) %>%
+    select(colnames(.)[i+1])
+  bad <- filter(.data = dat_df, fraud==TRUE) %>%
+    select(colnames(.)[i+1])
+  tmp <- ks.test(good[,1], bad[,1])
+  ks.results[i,2] <- tmp$statistic
 }
 
 # arrange variables according to D-statistic
