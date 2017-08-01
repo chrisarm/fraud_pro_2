@@ -9,8 +9,8 @@ if(!exists("cdt")){
 }
 
 # Split
-cdt <- cdt[50001:75000, .SD, with = TRUE]
-card_payments <- data.frame(cdt)
+# cdt <- cdt[50001:75000, .SD, with = TRUE]
+# card_payments <- data.frame(cdt)
 
 getHistory <- function(dtable, rowdate, record, days) {
   # Returns all rows in the time window, compares rowdate - "days" &  min(date) to fix date problems for the beginning rows in the table
@@ -59,7 +59,7 @@ setkey(cdt, date)
 
 ########################################
 # Fill in expert variables for each row:
-for(row in nrow(cdt):1){
+for(row in 50001:75000){
 
   # Create reference variables to time based limits
   refdate <-  cdt[row, date, with = TRUE]
@@ -69,7 +69,7 @@ for(row in nrow(cdt):1){
   refcardnum <- cdt[row, cardnum, with = TRUE]
 
   # Get the 7-day History including current day's transactions up to this record#
-  day7History <- mgetHistory(dtable = cdt, rowdate =  refdate, record = refrecord, days = 7)#Used function to make this go a bit faster by implementing memoise
+  day7History <- getHistory(dtable = cdt, rowdate =  refdate, record = refrecord, days = 7)#Used function to make this go a bit faster by implementing memoise
   day3History <- day7History[date <= refdate & date >= refdate - 3,] #Subset of day7History is day3History
   day1History <- day3History[date <= refdate & date >= refdate - 1,] #Subset of day3History is day1History
 
