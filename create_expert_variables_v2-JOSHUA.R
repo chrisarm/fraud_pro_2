@@ -8,7 +8,7 @@ if(!exists("cdt")){
   cdt <- data.table(card_payments)
 }
 
-# Test process on sample of the data
+# Split
 # cdt <- cdt[85001:95483, .SD, with = TRUE]
 # card_payments <- data.frame(cdt)
 
