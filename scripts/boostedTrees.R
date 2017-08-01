@@ -20,10 +20,7 @@ bt.fit <- train(fraud ~ e.1meanamount_zip3 + e.7medianamount_zip3 + e.1medianamo
                   data = train_dat,
                   method = "bstTree",
                   trControl = my.control,
-                  maxit = 1000,
-                  tuneGrid = my.grid,
-                  trace = F,
-                  linout = 1)
+                  tuneGrid = my.grid)
 
 # Save model
 save(bt.fit, file = "models/bt_model.rda")
