@@ -8,9 +8,9 @@ if(!exists("cdt")){
   cdt <- data.table(card_payments)
 }
 
-# Test process on sample of the data
-cdt <- cdt[85001:95483, .SD, with = TRUE]
-card_payments <- data.frame(cdt)
+# Split
+# cdt <- cdt[85001:95483, .SD, with = TRUE]
+# card_payments <- data.frame(cdt)
 
 getHistory <- function(dtable, rowdate, record, days) {
   # Returns all rows in the time window, compares rowdate - "days" &  min(date) to fix date problems for the beginning rows in the table
@@ -59,7 +59,7 @@ setkey(cdt, date)
 
 ########################################
 # Fill in expert variables for each row:
-for(row in nrow(cdt):1){
+for(row in 85001:95483){
 
   # Create reference variables to time based limits
   refdate <-  cdt[row, date, with = TRUE]
