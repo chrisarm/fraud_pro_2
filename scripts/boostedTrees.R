@@ -8,7 +8,7 @@ train_dat <- readRDS("data/train.RDS")
 set.seed(1234)
 
 # Adjust data type for fraud variable
-# train_dat$fraud <- as.numeric(train_dat$fraud)
+train_dat$fraud <- as.numeric(train_dat$fraud)
 
 # Train the model on the training set
 my.grid <- expand.grid(.interaction.depth = c(1,2,3), n.trees = c(2000,3000,4000))
