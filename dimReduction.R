@@ -36,7 +36,6 @@ dat_df <- dat_df[ ,!(names(dat_df) %in% ks.results$variables)]
 rm(good, bad, i, test, n)
 
 
-
 #### LOGISTIC REGRESSION -- STEPWISE ####
 library(radiant)
 
