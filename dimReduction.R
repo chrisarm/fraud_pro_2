@@ -24,15 +24,12 @@ for(i in 1:nrow(ks.results)){
   ks.results[i,2] <- tmp$statistic
 }
 
-# arrange variables according to D-statistic
-ks.results <- ks.results %>% arrange(D.stat)
-
 # save KS results to RDS file
 saveRDS(ks.results, "data/KSresults.RDS")
 
 # keep the top n variables based on D-stat
 top <- 25
-ks.results <- head(ks.results, n = top)
+ks.results <- ks.results %>% arrange(D.stat) %>% head(n=top)
 
 # reduce dat_df to variables in ks.results from previous step
 dat_df <- dat_df[ ,(names(dat_df) %in% c("fraud", ks.results$variables))]
