@@ -1,6 +1,8 @@
 #install.packages("h2o")
 library(h2o)
 
+train_df <- readRDS("data/train.RDS")
+
 # build autoencoder model
 localH2O = h2o.init()
 dat.hex<-as.h2o(train_df, destination_frame="train.hex")
