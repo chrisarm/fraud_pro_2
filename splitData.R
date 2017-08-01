@@ -1,26 +1,32 @@
+library(caret)
+library(tidyverse)
+seed <- 1234
+
 # read in data
-#dat_df <- readRDS("data/expert_card_payments.RDS")
+dat <- readRDS("data/.RDS")
 
 # sort by date field
-dat_df <- dat_df %>% arrange(record_number, date)
+dat <- dat %>% arrange(record_number, date)
 
 # create OOT data set
-dat_oot <- dat_df %>%
+dat_oot <- dat %>%
   filter(date >= "2010-10-01")
-saveRDS(dat_oot, "data/oot_df.RDS")
+saveRDS(dat_oot, "data/oot.RDS")
 
-# split data intro training and testing
-set.seed(1234)
-dat_df <- dat_df %>%
-  filter(date < "2010-10-01") %>% # MODIFY FILTER STATEMENT
-  mutate(random_splits = runif(nrow(.)))
+# remove OOT data from dataset
+dat <- dat %>%
+  filter(date < "2010-10-01")
+
+set.seed(seed)
+
+# create partition index
+trainIndex <- createDataPartition(dat$fraud, p = .66,
+                                  list = FALSE,
+                                  times = 1)
+head(trainIndex)
 
 # create training data
-train_df <- dat_df[random_splits > 0.33,]
-dim(train_df)
-saveRDS(train_df, "data/train_df.RDS")
-
-# create test data
-validate_df <- dat_df[random_splits <= 0.33,]
-dim(validate_df)
-saveRDS(validate_df, "data/validate_df.RDS")
+train_df <- dat[trainIndex,]
+test_df <- dat[-trainIndex,]
+saveRDS(train_df, "data/train.RDS")
+saveRDS(test_df, "data/test.RDS")
