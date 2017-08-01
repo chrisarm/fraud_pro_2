@@ -23,4 +23,3 @@ err <- as.data.frame(dat.anon)
 # reduced_new  <- h2o.deepfeatures(dat.dl, dat.hex)
 
 plot(sort(err$Reconstruction.MSE))
-

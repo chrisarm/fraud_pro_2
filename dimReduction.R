@@ -1,0 +1,48 @@
+# read in data
+dat_df <- readRDS("data/expert_card_payments.RDS")
+
+# reduce data set to only expert variables
+dat_df <- dat_df[,-c(1:9,11)]
+
+#### UNIVARIATE KS ####
+#install.packages("ks")
+library(ks)
+
+# create dataframe for ks test results
+ks.results <- data.frame(variables = colnames(dat_df)[2:length(dat_df)],
+                         D.stat = vector(mode = "numeric", length = (length(dat_df)-1)))
+
+# univariate test each expert variable --- NOT WORKING
+for(i in 2:length(dat_df)){
+  good <- dat_df[,c(1,i)]
+  good <- good %>% filter(fraud==FALSE)
+  bad <- dat_df[,c(1,i)]
+  bad <- bad %>% filter(fraud==TRUE)
+  test <- ks.test(good[,2], bad[,2])
+  ks.results[i-1,2] <- test$statistic
+}
+
+# arrange variables according to D-statistic
+ks.results <- ks.results %>% arrange(D.stat)
+
+# find the top 85% of variables based on D-stat
+n <- 85
+ks.results <- ks.results[ks.results$D.stat > quantile(ks.results$D.stat,prob=1-n/100),]
+
+# reduce dat_df to variables in ks.results from previous step
+dat_df <- dat_df[ ,!(names(dat_df) %in% ks.results$variables)]
+
+# remove extra variables in memory
+rm(good, bad, i, test, n)
+
+
+
+#### LOGISTIC REGRESSION -- STEPWISE ####
+library(radiant)
+
+# create logistic regression
+logit <- logistic(dataset = dat_df, rvar = "fraud", lev = "TRUE",
+                  evar = colnames(dat_df)[2:length(dat_df)], check = "stepwise-both")
+
+## summarize results of logistic regression
+summary(logit)
