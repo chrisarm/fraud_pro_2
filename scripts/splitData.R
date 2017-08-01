@@ -4,7 +4,7 @@ library(tidyverse)
 seed <- 1234
 
 # read in data
-dat <- readRDS("data/.RDS")
+dat <- readRDS("data/final.RDS")
 
 # sort by date field
 dat <- dat %>% arrange(record_number, date)
