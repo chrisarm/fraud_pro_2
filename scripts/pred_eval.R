@@ -21,6 +21,7 @@ rm("logit.model")
 
 # Adjust data type for fraud variable
 train_dat$fraud <- as.numeric(train_dat$fraud)
+test_dat$fraud <- as.numeric(test_dat$fraud)
 
 # Merge train/test data sets
 train_dat$train <- 1
@@ -49,7 +50,18 @@ dat <- rbind(train_dat, test_dat)
 # Create predictions
 dat$pred_logit <- predict(mod.logit, dat[,4:13], type="response")
 dat$pred_bt <- predict(mod.bt, dat[,4:13], type="response")
-dat$pred_nn <- predict(mod.nnet, dat[,4:13])
+dat$pred_nn <- predict(mod.nnet, dat[,4:13]) %>% as.numeric()
+dat_temp <- dat %>% select(fraud, pred_logit, pred_bt, pred_nn)
+
+# Bin each prediction
+dat$bin_bt <- ntile(dat$pred_bt,100)
+dat$bin_nn <- ntile(dat$pred_nn,100)
+
+# Combined predictions w/ equal weighting
+# dat$bin_sum <- (dat$bin_bt+dat$bin_nn) %>% ntile(100)
+dat$bin_max <- ifelse(dat$bin_bt > dat$bin_nn, dat$bin_bt, dat$bin_nn) %>% ntile(100)
+# sum(dat$fraud[dat$bin_max>=97])/sum(dat$fraud)
+# sum(dat$fraud[dat$bin_sum>=97])/sum(dat$fraud)
 
 # Save data with predictions
 saveRDS(dat,"data/pred_data.rds")
