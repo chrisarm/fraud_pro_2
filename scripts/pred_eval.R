@@ -37,14 +37,14 @@ accuracy <- NA
 FP <- NA
 TP <- NA
 accu.fn <- data.frame(threshold, accuracy, FP, TP)
-dat$fraud <- ifelse(dat$fraud==1, "Fraud","Not Fraud") %>% factor(levels=c("Not Fraud","Fraud"))
+dat$fraud <- ifelse(dat$fraud==1, "Fraud","Not Fraud") %>% factor(levels=c("Fraud","Not Fraud"))
 
 for (i in 1:length(threshold)){
-  dat$pred.fraud <- ifelse(dat$bin_max <= accu.fn$threshold[i], "Not Fraud", "Fraud") %>% factor(levels=c("Not Fraud","Fraud"))
+  dat$pred.fraud <- ifelse(dat$bin_max <= accu.fn$threshold[i], "Not Fraud", "Fraud") %>% factor(levels=c("Fraud","Not Fraud"))
   cf <- confusionMatrix(dat$pred.fraud, dat$fraud, positive = "Fraud")
   accu.fn$accuracy[i] <- (cf$table[1,1]+cf$table[2,2])/sum(cf$table)
-  accu.fn$TP[i] <- cf$table[2,2]/sum(cf$table[,2])
-  accu.fn$FP[i] <- cf$table[2,1]/sum(cf$table[,1])
+  accu.fn$TP[i] <- cf$table[1,1]/sum(cf$table[,1])
+  accu.fn$FP[i] <- cf$table[2,2]/sum(cf$table[,2])
 }
 
 p <- melt(accu.fn[,1:4], id.vars ="threshold") %>% ggplot(aes(x = threshold, y=value, color=variable)) + geom_point()

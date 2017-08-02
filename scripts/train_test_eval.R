@@ -28,3 +28,20 @@ write.csv(eval.train, "data/evaltab_train.csv")
 write.csv(eval.test, "data/evaltab_test.csv")
 
 # Plot tables
+eval.train %>%
+  gather("metric","score",2:4) %>%
+  ggplot(aes(x=threshold,y=score,color=metric))+geom_line(size=1)+
+  xlab("Bin Threshold")+ylab("% of Total Fraud Caught")+ggtitle("FDR Curve: Training Set")+
+  scale_color_discrete(label = c("Boosted Tree","Max", "Neural Network"))+
+  theme(legend.title = element_blank())+
+  scale_y_continuous(breaks = seq(0,1,.1))+
+  geom_abline(slope=-0.01, intercept=1, linetype="dashed")
+
+eval.test %>%
+  gather("metric","score",2:4) %>%
+  ggplot(aes(x=threshold,y=score,color=metric))+geom_line(size=1)+
+  xlab("Bin Threshold")+ylab("% of Total Fraud Caught")+ggtitle("FDR Curve: Test Set")+
+  scale_color_discrete(label = c("Boosted Tree","Max", "Neural Network"))+
+  theme(legend.title = element_blank())+
+  scale_y_continuous(breaks = seq(0,1,.1))+
+  geom_abline(slope=-0.01, intercept=1, linetype="dashed")
