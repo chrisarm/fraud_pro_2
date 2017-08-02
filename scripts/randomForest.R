@@ -10,6 +10,8 @@ dataset <- dataset %>%
   filter(date < "2010-10-01")
 # remove record number and date fields
 dataset <- dataset[,-c(1,2)]
+# change fraud to factor
+dataset$fraud <- as.factor(dataset$fraud)
 
 ### SET THESE VALUES BEFORE RUNNING ###
 seed <- 1234
