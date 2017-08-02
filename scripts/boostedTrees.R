@@ -43,3 +43,4 @@ save(bt.fit, file = "models/bt_model.rda")
 
 # Review results
 summary(bt.fit)
+plot(bt.fit)
