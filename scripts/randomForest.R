@@ -1,7 +1,6 @@
 library(randomForest)
 library(caret)
 library(mlbench)
-library(pROC)
 
 # read in data
 dataset <- readRDS("data/final.RDS")
@@ -17,9 +16,10 @@ dataset$fraud <- as.factor(dataset$fraud)
 seed <- 1234
 x <- dataset[,2:11] # features
 y <- dataset[,1] # outcome variable
-mtry <- c(1:10) # Number of variables randomly sampled as candidates at each split to test
-ntree <- c(100, 200, 300) # number of trees to test
+mtry <- c(4,8,17,30) # Number of variables randomly sampled as candidates at each split to test
+ntree <- c(500,1000,1500) # number of trees to test
 metric <- "Accuracy"
+
 
 # custom caret functions
 customRF <- list(type = "Classification", library = "randomForest", loop = NULL)
