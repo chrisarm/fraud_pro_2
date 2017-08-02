@@ -47,8 +47,8 @@ dat <- rbind(train_dat, test_dat)
 # save(mod.nnet, file = "models/nnet_model_rev.rda") # Save revised neural net model
 
 # Create predictions
-dat$pred_logit <- predict(mod.logit, dat[,4:13])
-dat$pred_bt <- predict(mod.bt, dat[,4:13])
+dat$pred_logit <- predict(mod.logit, dat[,4:13], type="response")
+dat$pred_bt <- predict(mod.bt, dat[,4:13], type="response")
 dat$pred_nn <- predict(mod.nnet, dat[,4:13])
 
 # Save data with predictions

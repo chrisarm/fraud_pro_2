@@ -8,7 +8,9 @@ train_dat <- readRDS("data/train.RDS")
 set.seed(1234)
 
 # Adjust data type for fraud variable
-train_dat$fraud <- as.numeric(train_dat$fraud)
+weights <- ifelse(train_dat$fraud, 10, 1)
+train_dat$fraud <- as.character(train_dat$fraud)
+train_dat$fraud <- ifelse(train_dat$fraud=="TRUE",1,0)
 
 # Train the model on the training set
 my.grid <- expand.grid(.decay = c(0.1,0.5,0.9), .size = c(2, 3, 4))
@@ -22,10 +24,24 @@ nnet.fit <- train(fraud ~ e.1meanamount_zip3 + e.7medianamount_zip3 + e.1mediana
                   maxit = 1000,
                   tuneGrid = my.grid,
                   trace = F,
-                  linout = 1)
+                  linout = 1,
+                  weights = weights)
+
+train_dat$fraud <- as.character(train_dat$fraud)
+train_dat$fraud <- ifelse(train_dat$fraud=="TRUE",1,0)
+mod.nnet <- nnet(formula = fraud ~ .,
+                 data = train_dat[,3:13],
+                 size = nnet.fit$bestTune$size,
+                 decay = nnet.fit$bestTune$decay,
+                 weights = weights)
+# Check predictions
+train_dat$fraud <- as.factor(train_dat$fraud)
+train_dat$pred_nn <- predict(mod.nnet, train_dat[,4:13])
+# train_dat$pred_nn <- predict(mod.nnet, train_dat[,4:13])
 
 # Save model
 save(nnet.fit, file = "models/nnet_model.rda")
+save(mod.nnet, file = "models/nnet_model_rev.rda")
 
 # Review results
 summary(nnet.fit)
