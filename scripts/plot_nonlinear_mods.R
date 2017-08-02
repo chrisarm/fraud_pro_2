@@ -22,4 +22,3 @@ plot.nnet(mod.nnet) # plot of final nerual network model
 bt.fit # tuning results
 plot(bt.fit) # plot of tuning results
 summary.gbm(mod.bt) # plot of final booste tree model
-
