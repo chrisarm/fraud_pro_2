@@ -58,10 +58,10 @@ err <- as.data.frame(dat.anon)
 # reduced_new  <- h2o.deepfeatures(dat.dl, dat.hex)
 
 plot(sort(err$Reconstruction.MSE))
+limit <- 0.0125
 
 # use the easy portion and model with random forest using same settings
-
-train_df_auto <- train_df[err$Reconstruction.MSE < 0.1,]
+train_df_auto <- train_df[err$Reconstruction.MSE < limit,]
 
 set.seed(seed)
 rf_model <- randomForest(x=train_df_auto[,feature_names],
@@ -78,7 +78,7 @@ abline(h=1,col='blue')
 abline(h=0,col='green')
 
 # use the hard portion and model with random forest using same settings
-train_df_auto <- train_df[err$Reconstruction.MSE >= 0.1,]
+train_df_auto <- train_df[err$Reconstruction.MSE >= limit,]
 
 set.seed(seed)
 rf_model <- randomForest(x=train_df_auto[,feature_names],
