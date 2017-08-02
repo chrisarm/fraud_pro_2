@@ -1,57 +1,56 @@
 suppressPackageStartupMessages(library(caret))
 suppressPackageStartupMessages(library(tidyverse))
-suppressPackageStartupMessages(library(gbm))
-suppressPackageStartupMessages(library(neuralnet))
+suppressPackageStartupMessages(library(pROC))
+suppressPackageStartupMessages(library(scales))
+suppressPackageStartupMessages(library(reshape2))
 
 # Import train set
-train_dat <- readRDS("data/train.RDS")
-test_dat <- readRDS("data/test.RDS")
+dat <- readRDS("data/pred_data.RDS")
+dat <- dat %>% filter(train==0)
 
-# Import models
-load("models/logit_model.rda")
-# load("models/nnet_model.rda")
-# load("models/bt_model.rda")
-load("models/nnet_model_rev.rda")
-load("models/bt_model_rev.rda")
-mod.logit <- logit.model
-# mod.bt <- bt.fit
-# mod.nnet <- nnet.fit
-# rm("bt.fit", "logit.model", "nnet.fit")
-rm("logit.model")
+# Building ROC curves
+# roc_logit <- roc(dat$fraud, dat$pred_logit, levels=c(1,0))
+# roc_bt <- roc(dat$fraud, dat$pred_bt, levels=c(1,0))
+# roc_nn <- roc(dat$fraud, dat$pred_nn, levels=c(1,0))
 
-# Adjust data type for fraud variable
-train_dat$fraud <- as.numeric(train_dat$fraud)
+# Plot ROC curves
+# roc_logit.plot <- ggroc(roc_logit)
+# roc_nn.plot <- ggroc(roc_nn)
+# roc_bt.plot <- ggroc(roc_bt)
 
-# Merge train/test data sets
-train_dat$train <- 1
-test_dat$train <- 0
-dat <- rbind(train_dat, test_dat)
+# AUC calculations
+# auc_logit <- auc(roc_logit)
+# auc_nn <- auc(roc_nn)
+# auc_bt <- auc(roc_bt)
 
-# Create model from mod.bt
-# mod.bt <- gbm(formula = fraud ~ .,
-#               distribution = "gaussian",
-#               data = train_dat[,3:13],
-#               n.trees = mod.bt$bestTune$n.trees,
-#               shrinkage = mod.bt$bestTune$shrinkage,
-#               n.minobsinnode = mod.bt$bestTune$n.minobsinnode,
-#               interaction.depth = mod.bt$bestTune$interaction.depth,
-#               cv.folds = 10,
-#               n.cores = 2)
-# save(mod.bt, file = "models/bt_model_rev.rda") # Save revised boosted tree model
+# Modify ROC curves
+# roc_logit.plot <- roc_logit.plot + ggtitle("ROC Curve: Logit", subtitle = paste0("AUC: ", percent(auc_logit))) +
+#   geom_abline(slope = 1, intercept = 1)
+# roc_bt.plot <- roc_bt.plot + ggtitle("ROC Curve: Boosted Tree", subtitle = paste0("AUC: ", percent(auc_bt))) +
+#   geom_abline(slope = 1, intercept = 1)
+# roc_nn.plot <- roc_nn.plot + ggtitle("ROC Curve: Neural Network", subtitle = paste0("AUC: ", percent(auc_nn))) +
+#   geom_abline(slope = 1, intercept = 1)
 
-# Create model from mod.bt
-# mod.nnet <- nnet(formula = fraud ~ .,
-#                  data = train_dat[,3:13],
-#                  size = mod.nnet$bestTune$size,
-#                  decay = mod.nnet$bestTune$decay)
-# save(mod.nnet, file = "models/nnet_model_rev.rda") # Save revised neural net model
+# Examine accuracy over several thresholds (run on combined max bin score)
+threshold <- seq(0,100,by=1)
+accuracy <- NA
+FP <- NA
+TP <- NA
+accu.fn <- data.frame(threshold, accuracy, FP, TP)
+dat$fraud <- ifelse(dat$fraud==1, "Fraud","Not Fraud") %>% factor(levels=c("Not Fraud","Fraud"))
 
-# Create predictions
-dat$pred_logit <- predict(mod.logit, dat[,4:13], type="response")
-dat$pred_bt <- predict(mod.bt, dat[,4:13], type="response")
-dat$pred_nn <- predict(mod.nnet, dat[,4:13])
+for (i in 1:length(threshold)){
+  dat$pred.fraud <- ifelse(dat$bin_max <= accu.fn$threshold[i], "Not Fraud", "Fraud") %>% factor(levels=c("Not Fraud","Fraud"))
+  cf <- confusionMatrix(dat$pred.fraud, dat$fraud, positive = "Fraud")
+  accu.fn$accuracy[i] <- (cf$table[1,1]+cf$table[2,2])/sum(cf$table)
+  accu.fn$TP[i] <- cf$table[2,2]/sum(cf$table[,2])
+  accu.fn$FP[i] <- cf$table[2,1]/sum(cf$table[,1])
+}
 
-# Save data with predictions
-saveRDS(dat,"data/pred_data.rds")
+p <- melt(accu.fn[,1:4], id.vars ="threshold") %>% ggplot(aes(x = threshold, y=value, color=variable)) + geom_point()
 
-# Evaluate models (in progress)
+accu.fn$inters.accuTP <- abs(accu.fn$accuracy - accu.fn$TP)
+target.threshold <- accu.fn[which(accu.fn$inters.accuTP == min(accu.fn$inters.accuTP)),]$threshold
+
+p + geom_vline(xintercept=target.threshold, linetype="dotted") +
+  ggtitle(paste0("Optimal Threshold for Scoring (",percent(target.threshold/100),")")) + theme(legend.title = element_blank())
